@@ -1,0 +1,13 @@
+
+
+# R session data
+.RData
+.Ruserdata
+
+# RStudio project files
+.Rproj.user/
+*.Rproj
+
+rsconnect/
+.Rhistory
+FinalProject.Rproj
