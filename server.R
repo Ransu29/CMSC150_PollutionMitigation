@@ -1,3 +1,6 @@
+# server.R 
+
+# load required libraries
 library(shiny)          # ui library
 library(bslib)          # boostrap ui lib
 library(shinyWidgets)   # widget lib
@@ -31,7 +34,7 @@ function(input, output, session) {
   
   # sidebar event handlers 
   
-  # handler for the "select all" button
+  # handler for the 'select all' button
   observeEvent(input$choose_all, {
     updateCheckboxGroupInput(session, "chosen_projects", selected = project_full_names)
   })
@@ -42,7 +45,7 @@ function(input, output, session) {
   })
   
   
-  # real-time initial tableau rendering
+  # initial tableau rendering
   # table updates reactively whenever the user changes their project selection
   output$live_initial_tableau <- renderTable({
     # req() ensures that this code only runs if at least one project is selected
@@ -76,7 +79,7 @@ function(input, output, session) {
   })
   
   
-  # dynamic ui for displaying results 
+  # dynamic ui for displaying results with rearranged cards
   # builds the ui for the results section
   # appears only after the optimization has run
   output$results_ui <- renderUI({
@@ -96,6 +99,14 @@ function(input, output, session) {
     # if valid, build a set of cards to display all results
     number_of_iterations <- max(0, length(optimization_result$iterations) - 1)
     tagList(
+      # shows the final basic solution table (moved up)
+      card(class = "mt-3", card_header("Final Basic Solution"),
+           card_body(
+             p("This table shows the values of all variables at the final optimal state."),
+             div(style = "overflow-x:auto;", tableOutput("final_solution_table"))
+           )
+      ),
+      
       # holds both the cost and pollutant summaries
       card(class = "mt-3",
            card_header(class = "bg-success text-white",
@@ -106,24 +117,18 @@ function(input, output, session) {
              h4(paste("Total Optimal Cost:", dollar(optimization_result$Z, accuracy=0.01))),
              hr(),
              h5("Summary of Recommended Projects:"), 
-             tableOutput("summary_table"), hr(), 
-             h5("Total Pollutant Reduction"),
-             p("The total amount of each pollutant reduced by the optimal project mix."),
-             tableOutput("pollutant_summary_table")
-           )
-      ),
-      
-      # shows the final basic solution table
-      card(class = "mt-3", card_header("final basic solution"),
-           card_body(
-             p("this table shows the values of all variables at the final optimal state."),
-             div(style = "overflow-x:auto;", tableOutput("final_solution_table"))
+             tableOutput("summary_table")
+             
            )
       ),
       
       # displays the visualization plot
-      card(class = "mt-3", card_header("allocation visualization", class = "bg-info text-white"),
-           card_body(plotOutput("results_plot", height = "500px")))
+      card(class = "mt-3", card_header("Allocation Visualization", class = "bg-info text-white"),
+           card_body(plotOutput("results_plot", height = "500px"))),
+      card(class="mt-3", card_header("Total Pollutant Reduction", class = "bg-info text-white"),
+          card_body(p("The total amount of each pollutant reduced by the optimal project mix."),
+                    tableOutput("pollutant_summary_table"))
+           )
     )
   })
   
@@ -291,7 +296,7 @@ function(input, output, session) {
     # add the project names as the first column
     projects_df <- cbind(`Mitigation Project` = rownames(projects_df), projects_df)
     
-
+    
     #rename the Costs column 
     colnames(projects_df)[1] <- "Mitigation Project"
     colnames(projects_df)[2] <- "Cost ($)"
