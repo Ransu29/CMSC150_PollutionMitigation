@@ -46,8 +46,7 @@ getZ <- function(tableu) {
 
 
 
-GaussJordanSimplex <- function(tableu, isMax) {
-  
+GaussJordanSimplex <- function(tableu) {
   finalTableu = tableu
   nRows = nrow(tableu)
   nCols = ncol(tableu)
@@ -58,7 +57,7 @@ GaussJordanSimplex <- function(tableu, isMax) {
   # for tracking the basic solution at each step
   iterSolutions = list()
   # calculate and store the solution for the initial tableau 
-  initial_solution = if (isMax) MaximizeData(tableu, nRows, nCols) else MinimizeData(tableu, nRows, nCols)
+  initial_solution = MaximizeData(tableu, nRows, nCols)
   iterSolutions[[1]] = initial_solution
   
   while (TRUE) {
@@ -91,9 +90,10 @@ GaussJordanSimplex <- function(tableu, isMax) {
     iterations[[length(iterations) + 1]] = finalTableu
     
     # calculate and store the basic solution for the current iteration ---
-    current_solution <- if (isMax) MaximizeData(finalTableu, nRows, nCols) else MinimizeData(finalTableu, nRows, nCols)
+    current_solution <- MaximizeData(finalTableu, nRows, nCols) 
     iterSolutions[[length(iterSolutions) + 1]] = current_solution
   }
+  iterSolutions[[length(iterSolutions)]] = MinimizeData(finalTableu, nRows, nCols)
   
   # return the new list along with the others
   return(list("finalTableau" = finalTableu, "iterations" = iterations, "iterSolutions" = iterSolutions, "valid" = valid))
@@ -159,7 +159,7 @@ Simplex <- function(tableu, isMax = TRUE) {
   nCols = ncol(tableu)
   
   # compute final tableau and capture all results
-  eliminationsResults = GaussJordanSimplex(tableu, isMax) 
+  eliminationsResults = GaussJordanSimplex(tableu) 
   
   finalTableau = eliminationsResults[["finalTableau"]]
   valid = eliminationsResults[["valid"]]

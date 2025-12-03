@@ -54,29 +54,23 @@ projects_matrix = matrix(data_vector, nrow = 30, ncol = 11, byrow = TRUE)
 colnames(projects_matrix) = c("Costs", "CO2", "NOx", "SO2", "PM2.5", "CH4", "VOC", "CO", "NH3", "BC", "N2O")
 rownames(projects_matrix) = project_full_names
 
-#creates a target pollutants vector
+# Creates a target pollutants vector
 pollutant_names = c("CO2", "NOx", "SO2", "PM2.5", "CH4","VOC", "CO", "NH3", "BC", "N2O")
 target_values = c(1000, 35, 25, 20, 60, 45, 80, 12, 6, 10)
 pollutant_targets = setNames(target_values, pollutant_names)
 print(projects_matrix["Large Solar Park", 2:11])
 
 BuildInitialMatrix<-function(chosenProjectNames){
-  # builds the matrix of the projects
   numOfProjects = length(chosenProjectNames)
   chosenProjects = matrix(0,  nrow = 10, ncol = numOfProjects)
-  # adds the names for row and col
   colnames(chosenProjects) = chosenProjectNames
   rownames(chosenProjects) = pollutant_names
-  # initializes the z row with 0 values
   zRow = rep(0, numOfProjects)
-  #RHS for the max project restriction
   maxProjConstraint = rep(-20, numOfProjects)
   
   #adds it to the initial Tableau
   for(col in 1:numOfProjects){
-    # gets the pollution reduction values of the corresponding project
     chosenProjects[,col] = projects_matrix[chosenProjectNames[col],2:11]
-    #adds the cost of the project as its value in Z column
     zRow[col] = projects_matrix[chosenProjectNames[col],1]
   }
   #builds the variable for projects constraint of max 20 projects
@@ -96,11 +90,9 @@ BuildInitialMatrix<-function(chosenProjectNames){
 BuildTableau <- function(transposedMatrix){
   rows = nrow(transposedMatrix)
   cols = ncol(transposedMatrix)
-  # matrix for the variables
+  
   variableCols = diag(rows)
-  #name for the slack variables
-  variableColsNames = paste0("s", 1:(rows-1))   
-  #names the variableCols
+  variableColsNames = paste0("s", 1:(rows-1))   # name your slack vars
   rownames(variableCols) = rownames(transposedMatrix)
   
   # makes the last row negative
@@ -110,7 +102,7 @@ BuildTableau <- function(transposedMatrix){
   
   matrix_part1 = transposedMatrix[, 1:(cols - 1)]
   matrix_part2 = transposedMatrix[, cols]
-  #insert the variableCols between the slack and the Z and Solution col
+  
   tableau = cbind(matrix_part1, variableCols, matrix_part2)
   
   # reset column names after cbind
@@ -126,11 +118,8 @@ proj = c("Large Solar Park", "Small Solar Installations", "Wind Farm", "Gas-to-r
          "Catalytic Converters for Buses")
 
 SetUpTableu<-function(chosenProjects){
-  # build the inital matrix
   initialMatrix = BuildInitialMatrix(chosenProjects)
-  # transposes the matrix
   transposedMatrix = t(initialMatrix)
-  # builds the tableau
   tableau = BuildTableau(transposedMatrix)
   return(list(
     chosenProjectsMatrix = initialMatrix,
@@ -138,7 +127,7 @@ SetUpTableu<-function(chosenProjects){
   ))
   
 }
-
+ print(SetUpTableu(project_full_names))
 
 
 
